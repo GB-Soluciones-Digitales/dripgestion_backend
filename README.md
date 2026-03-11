@@ -29,8 +29,7 @@ Cada registro en las tablas críticas (`clientes`, `pedidos`, `movimientos`) pos
 2. Crear entorno virtual: `python -m venv venv`
 3. Instalar dependencias: `pip install -r requirements.txt`
 4. Configurar `.env` con tus credenciales de Postgres y `SECRET_KEY`.
-5. Ejecutar migraciones: `alembic upgrade head` (si usas Alembic) o correr `main.py`.
-6. Iniciar: `uvicorn app.main:app --reload`
+5. Iniciar: `uvicorn app.main:app --reload`
 
 ## 📡 Módulos Principales
 - **Auth:** Gestión de sesiones y roles (ADMIN, CHOFER, CLIENTE).
@@ -39,7 +38,7 @@ Cada registro en las tablas críticas (`clientes`, `pedidos`, `movimientos`) pos
 - **Logística:** Registro de recorridos, ventas y cierres de caja diarios.
 
 ## 🚀 Roadmap / Próximas Actualizaciones
-- [ ] **Facturación Electrónica:** Integración con AFIP/API local.
+- [ ] **Facturación Electrónica:** Integración con AFIP.
 - [ ] **Optimización de Rutas:** Algoritmo de despacho inteligente basado en Google Maps.
 - [ ] **Notificaciones Push:** Alertas de stock y recordatorios de pago automáticos.
 - [ ] **Reportes en PDF:** Generación de resúmenes de cuenta descargables.

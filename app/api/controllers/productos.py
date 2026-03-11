@@ -10,11 +10,11 @@ from app.crud import crud_producto
 
 router = APIRouter()
 
-@router.get("/", response_model=List[ProductoResponse])
+@router.get("", response_model=List[ProductoResponse])
 def get_productos(db: Session = Depends(get_db), current_user: User = Depends(deps.get_current_user)):
     return crud_producto.get_productos_by_tenant(db, current_user.tenant_id)
 
-@router.post("/", response_model=ProductoResponse)
+@router.post("", response_model=ProductoResponse)
 def create_producto(prod_in: ProductoCreate, db: Session = Depends(get_db), current_user: User = Depends(deps.get_current_user)):
     try:
         return producto_service.crear_producto(db, prod_in, current_user.tenant_id)

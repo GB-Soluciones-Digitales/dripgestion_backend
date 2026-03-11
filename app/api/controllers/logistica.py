@@ -11,11 +11,11 @@ from app.crud import crud_logistica
 
 router = APIRouter()
 
-@router.post("/recorridos/", response_model=schemas.RecorridoResponse)
+@router.post("/recorridos", response_model=schemas.RecorridoResponse)
 def create_recorrido(recorrido_in: schemas.RecorridoCreate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     return crud_logistica.create_recorrido(db, recorrido_in.dict(), current_user.tenant_id)
 
-@router.get("/recorridos/", response_model=List[schemas.RecorridoResponse])
+@router.get("/recorridos", response_model=List[schemas.RecorridoResponse])
 def get_recorridos(db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     return crud_logistica.get_recorridos_by_tenant(db, current_user.tenant_id)
 
@@ -42,7 +42,7 @@ def delete_recorrido(recorrido_id: int, db: Session = Depends(get_db), current_u
     crud_logistica.delete_recorrido(db, recorrido)
     return {"message": "Recorrido eliminado exitosamente"}
 
-@router.post("/movimientos/")
+@router.post("/movimientos")
 def registrar_movimiento(mov_in: schemas.MovimientoCreate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     try:
         return logistica_service.registrar_entrega(db, mov_in, current_user.tenant_id)
@@ -56,7 +56,7 @@ def registrar_pago_manual(cliente_id: int, pago_in: PagoManualCreate, db: Sessio
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.get("/historial/")
+@router.get("/historial")
 def get_historial_por_fecha(fecha: Optional[date] = None, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     if not fecha: fecha = date.today()
     return logistica_service.obtener_historial_dia(db, fecha, current_user.tenant_id)

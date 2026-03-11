@@ -8,11 +8,11 @@ from app.services import cliente_service
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas.ClienteResponse])
+@router.get("", response_model=List[schemas.ClienteResponse])
 def read_clientes(db: Session = Depends(get_db), skip: int = 0, limit: int = 100, current_user: models.user.User = Depends(deps.get_current_user)):
     return db.query(models.cliente.Cliente).filter(models.cliente.Cliente.tenant_id == current_user.tenant_id).offset(skip).limit(limit).all()
 
-@router.post("/", response_model=schemas.ClienteResponse)
+@router.post("", response_model=schemas.ClienteResponse)
 def create_cliente(cliente_in: schemas.ClienteCreate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     try:
         return cliente_service.crear_cliente_y_usuario(db, cliente_in, current_user.tenant_id)

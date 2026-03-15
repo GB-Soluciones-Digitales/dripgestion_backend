@@ -33,11 +33,16 @@ class TenantCreate(TenantBase):
 
 class TenantUpdate(BaseModel):
     nombre: Optional[str] = None
-    subdominio: Optional[str] = None
+    whatsapp: Optional[str] = None
     logo_url: Optional[str] = None
+    font_sans: Optional[str] = None
     color_primario: Optional[str] = None
-    color_secundario: Optional[str] = None
-    is_active: Optional[bool] = None
+    color_primario_light: Optional[str] = None
+    color_primario_dark: Optional[str] = None
+    color_background: Optional[str] = None
+    color_success: Optional[str] = None
+    color_danger: Optional[str] = None
+    color_secondary: Optional[str] = None
 
 class TenantResponse(TenantBase):
     id: int

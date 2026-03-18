@@ -23,3 +23,11 @@ def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordR
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: models.user.User = Depends(deps.get_current_user)):
     return current_user
+
+@router.put("/password", status_code=status.HTTP_200_OK)
+def update_user_password(password_data: schemas.user.PasswordUpdate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
+    try:
+        auth_service.actualizar_password(db, current_user, password_data)
+        return {"message": "Contraseña actualizada exitosamente"}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

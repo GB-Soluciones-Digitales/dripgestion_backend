@@ -42,3 +42,13 @@ def get_current_user(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Usuario inactivo")
     return user
+
+def get_current_admin(
+    current_user: models.user.User = Depends(get_current_user)
+) -> models.user.User:
+    if current_user.role != models.user.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario no tiene privilegios de administrador",
+        )
+    return current_user

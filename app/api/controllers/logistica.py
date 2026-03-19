@@ -12,12 +12,12 @@ from app.crud import crud_logistica
 router = APIRouter()
 
 @router.post("/recorridos", response_model=schemas.RecorridoResponse)
-def create_recorrido(recorrido_in: schemas.RecorridoCreate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
-    return crud_logistica.create_recorrido(db, recorrido_in.dict(), current_user.tenant_id)
+def create_recorrido(recorrido_in: schemas.RecorridoCreate, db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
+    return crud_logistica.create_recorrido(db, recorrido_in.model_dump(), current_admin.tenant_id)
 
 @router.get("/recorridos", response_model=List[schemas.RecorridoResponse])
 def get_recorridos(db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
-    return crud_logistica.get_recorridos_by_tenant(db, current_user.tenant_id)
+    return crud_logistica.get_recorridos_smart(db, current_user)
 
 @router.get("/recorridos/{recorrido_id}", response_model=schemas.RecorridoResponse)
 def get_recorrido_by_id(recorrido_id: int, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
@@ -26,11 +26,17 @@ def get_recorrido_by_id(recorrido_id: int, db: Session = Depends(get_db), curren
     return recorrido
 
 @router.put("/recorridos/{recorrido_id}", response_model=schemas.RecorridoResponse)
-def update_recorrido(recorrido_id: int, recorrido_in: schemas.RecorridoUpdate, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
-    recorrido = crud_logistica.get_recorrido(db, recorrido_id, current_user.tenant_id)
-    if not recorrido: raise HTTPException(status_code=404, detail="Recorrido no encontrado")
-    if recorrido_in.nombre: recorrido.nombre = recorrido_in.nombre
-    if recorrido_in.clientes_orden is not None: recorrido.clientes_orden = recorrido_in.clientes_orden
+def update_recorrido(recorrido_id: int, recorrido_in: schemas.RecorridoUpdate, db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
+    recorrido = crud_logistica.get_recorrido(db, recorrido_id, current_admin.tenant_id)
+    
+    if not recorrido: 
+        raise HTTPException(status_code=404, detail="Recorrido no encontrado")
+        
+    if recorrido_in.nombre: 
+        recorrido.nombre = recorrido_in.nombre
+    if recorrido_in.clientes_orden is not None: 
+        recorrido.clientes_orden = recorrido_in.clientes_orden
+        
     db.commit()
     db.refresh(recorrido)
     return recorrido
@@ -62,5 +68,5 @@ def get_historial_por_fecha(fecha: Optional[date] = None, db: Session = Depends(
     return logistica_service.obtener_historial_dia(db, fecha, current_user.tenant_id)
 
 @router.get("/historial/mes-actual")
-def get_resumen_mes_actual(db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
-    return logistica_service.obtener_resumen_mes(db, current_user.tenant_id)
+def get_resumen_mes_actual(db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
+    return logistica_service.obtener_resumen_mes(db, current_admin.tenant_id)

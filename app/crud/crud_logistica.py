@@ -19,7 +19,7 @@ def get_recorridos_smart(db: Session, user: Any):
     if user.role != UserRole.ADMIN:
         return db.query(Recorrido).filter(
             Recorrido.tenant_id == user.tenant_id,
-            Recorrido.usuario_id == user.id
+            Recorrido.repartidor_id == user.id
         ).all()
     
     return db.query(Recorrido).filter(Recorrido.tenant_id == user.tenant_id).all()

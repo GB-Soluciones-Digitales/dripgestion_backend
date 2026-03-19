@@ -6,7 +6,7 @@ class ClienteBase(BaseModel):
     nombre_negocio: str
     direccion: str
     telefono: Optional[str] = None
-    cuit: Optional[str] = Field(None, pattern=r"^\d{11}$", description="Debe contener exactamente 11 números sin guiones")
+    cuit: Optional[str] = None
     condicion_iva: Optional[CondicionIVA] = CondicionIVA.CONSUMIDOR_FINAL
     observaciones: Optional[str] = None
     

@@ -6,6 +6,7 @@ class TenantBase(BaseModel):
     subdominio: str
     whatsapp: Optional[str] = None
     logo_url: Optional[str] = None
+    logo_public_id: Optional[str] = None
     is_active: bool = True
     font_sans: Optional[str] = "'Inter', sans-serif"
     color_primario: Optional[str] = "#25A7DA"
@@ -21,6 +22,7 @@ class TenantCreate(TenantBase):
     subdominio: Optional[str] = None
     whatsapp: Optional[str] = None
     logo_url: Optional[str] = None
+    logo_public_id: Optional[str] = None
     is_active: Optional[bool] = None
     font_sans: Optional[str] = None
     color_primario: Optional[str] = None
@@ -35,6 +37,7 @@ class TenantUpdate(BaseModel):
     nombre: Optional[str] = None
     whatsapp: Optional[str] = None
     logo_url: Optional[str] = None
+    logo_public_id: Optional[str] = None
     font_sans: Optional[str] = None
     color_primario: Optional[str] = None
     color_primario_light: Optional[str] = None

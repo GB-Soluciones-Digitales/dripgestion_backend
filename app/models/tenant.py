@@ -11,6 +11,7 @@ class Tenant(Base):
     
     # --- Branding Dinámico ---
     logo_url = Column(String, nullable=True)
+    logo_public_id = Column(String, nullable=True)
     font_sans = Column(String, default="'Inter', sans-serif")
     color_primario = Column(String, default="#25A7DA")
     color_primario_light = Column(String, default="#00ACC1")

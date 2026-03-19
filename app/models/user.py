@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, Enum
 from app.db.base import Base
 import enum
+from sqlalchemy.orm import validates
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
@@ -31,3 +32,9 @@ class User(Base):
     
     is_active = Column(Boolean, default=True)
     full_name = Column(String, nullable=True)
+
+    @validates('role')
+    def validate_role(self, key, value):
+        if isinstance(value, str):
+            return value.lower()
+        return value

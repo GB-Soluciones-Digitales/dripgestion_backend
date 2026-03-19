@@ -1,6 +1,8 @@
+from typing import Any
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
+from app.models.user import UserRole
 from app.schemas.logistica import MovimientoCreate, PagoManualCreate
 from app.crud import crud_logistica
 from app.models.cliente import Cliente
@@ -91,16 +93,21 @@ def obtener_historial_dia(db: Session, fecha: date, tenant_id: int):
         })
     return resultados
 
-def obtener_resumen_mes(db: Session, tenant_id: int):
+def obtener_resumen_mes(db: Session, user: Any):
+    if user.role != UserRole.ADMIN:
+        raise ValueError("No tienes permisos para ver el resumen mensual.")
+
     hoy = date.today()
+    tenant_id = user.tenant_id
+    
     movimientos = crud_logistica.get_movimientos_mes(db, hoy.month, hoy.year, tenant_id)
 
     efectivo = sum(m.monto_cobrado for m in movimientos if m.metodo_pago == 'efectivo')
     transferencia = sum(m.monto_cobrado for m in movimientos if m.metodo_pago == 'transferencia')
 
     deuda_en_calle = db.query(func.sum(Cliente.saldo_dinero))\
-                       .filter(Cliente.tenant_id == tenant_id, Cliente.saldo_dinero > 0)\
-                       .scalar() or 0.0
+                        .filter(Cliente.tenant_id == tenant_id, Cliente.saldo_dinero > 0)\
+                        .scalar() or 0.0
     
     return {
         "efectivo": efectivo, 

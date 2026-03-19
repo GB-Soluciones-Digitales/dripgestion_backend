@@ -1,7 +1,10 @@
+from typing import Any
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date
-from app.models import logistica, cliente, user
+from app.models import logistica, cliente
+from app.models.user import UserRole 
+from app.models.logistica import Recorrido
 
 def get_recorrido(db: Session, recorrido_id: int, tenant_id: int):
     return db.query(logistica.Recorrido).filter(
@@ -12,14 +15,14 @@ def get_recorrido(db: Session, recorrido_id: int, tenant_id: int):
 def get_recorridos_by_tenant(db: Session, tenant_id: int):
     return db.query(logistica.Recorrido).filter(logistica.Recorrido.tenant_id == tenant_id).all()
 
-def get_recorridos_smart(db: Session, user: user.User):
-    query = db.query(logistica.Recorrido).filter(
-        logistica.Recorrido.tenant_id == user.tenant_id
-    )
-    if user.role != user.UserRole.ADMIN:
-        query = query.filter(logistica.Recorrido.repartidor_id == user.id)
+def get_recorridos_smart(db: Session, user: Any):
+    if user.role != UserRole.ADMIN:
+        return db.query(Recorrido).filter(
+            Recorrido.tenant_id == user.tenant_id,
+            Recorrido.usuario_id == user.id
+        ).all()
     
-    return query.all()
+    return db.query(Recorrido).filter(Recorrido.tenant_id == user.tenant_id).all()
 
 def create_recorrido(db: Session, recorrido_in_dict: dict, tenant_id: int):
     nuevo = logistica.Recorrido(**recorrido_in_dict, tenant_id=tenant_id)

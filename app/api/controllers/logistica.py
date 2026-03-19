@@ -69,4 +69,7 @@ def get_historial_por_fecha(fecha: Optional[date] = None, db: Session = Depends(
 
 @router.get("/historial/mes-actual")
 def get_resumen_mes_actual(db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
-    return logistica_service.obtener_resumen_mes(db, current_admin.tenant_id)
+    try:
+        return logistica_service.obtener_resumen_mes(db, current_admin)
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))

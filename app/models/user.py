@@ -7,6 +7,14 @@ class UserRole(str, enum.Enum):
     REPARTIDOR = "repartidor"
     CLIENTE = "cliente"
 
+    @classmethod
+    def _missing_(cls, value):
+        if isinstance(value, str):
+            for member in cls:
+                if member.value == value.lower():
+                    return member
+        return None
+
 class User(Base):
     __tablename__ = "users"
 

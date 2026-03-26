@@ -7,53 +7,77 @@ from app.schemas.logistica import MovimientoCreate, PagoManualCreate
 from app.crud import crud_logistica
 from app.models.cliente import Cliente
 from app.models.producto import Producto
+from app.models.logistica import Recorrido
 
-def registrar_entrega(db: Session, mov_in: MovimientoCreate, tenant_id: int):
-    cliente = db.query(Cliente).filter(Cliente.id == mov_in.cliente_id, Cliente.tenant_id == tenant_id).first()
+def registrar_entrega(db: Session, mov_in: MovimientoCreate, current_user: Any, tenant_id: int):
+    cliente = db.query(Cliente).filter(
+        Cliente.id == mov_in.cliente_id,
+        Cliente.tenant_id == tenant_id
+    ).first()
     if not cliente:
         raise ValueError("Cliente no encontrado")
 
+    if mov_in.recorrido_id:
+        recorrido = db.query(Recorrido).filter(
+            Recorrido.id == mov_in.recorrido_id,
+            Recorrido.tenant_id == tenant_id
+        ).first()
+ 
+        if not recorrido:
+            raise ValueError("Recorrido no encontrado")
+ 
+        if current_user.role != UserRole.ADMIN:
+            if recorrido.repartidor_id != current_user.id:
+                raise ValueError("No tenés permiso para registrar movimientos en este recorrido")
+ 
+        repartidor_id = recorrido.repartidor_id or current_user.id
+ 
     if not isinstance(cliente.stock_envases, dict):
         cliente.stock_envases = {}
-    
-    stock_actualizado = dict(cliente.stock_envases) 
+ 
+    stock_actualizado = dict(cliente.stock_envases)
     for producto_id, cant in mov_in.detalles.items():
         if str(producto_id) not in stock_actualizado:
             stock_actualizado[str(producto_id)] = 0
         entregado = cant.get('entregado', 0)
         devuelto = cant.get('devuelto', 0)
         stock_actualizado[str(producto_id)] += (entregado - devuelto)
-
+ 
     cliente.stock_envases = stock_actualizado
-    
+ 
     deuda_generada = mov_in.monto_total - mov_in.monto_cobrado
     cliente.saldo_dinero += deuda_generada
-
+ 
     db.add(cliente)
-           
+ 
     mov_data = {
         "tenant_id": tenant_id,
         "cliente_id": mov_in.cliente_id,
+        "repartidor_id": repartidor_id,
         "recorrido_id": mov_in.recorrido_id,
-        "detalles": mov_in.detalles, 
+        "detalles": mov_in.detalles,
         "monto_total": mov_in.monto_total,
         "monto_cobrado": mov_in.monto_cobrado,
         "metodo_pago": mov_in.metodo_pago,
         "observacion": mov_in.observacion
     }
-    
+ 
     return crud_logistica.create_movimiento(db, mov_data)
 
-def registrar_pago_manual(db: Session, cliente_id: int, pago_in: PagoManualCreate, tenant_id: int):
-    cliente = db.query(Cliente).filter(Cliente.id == cliente_id, Cliente.tenant_id == tenant_id).first()
+def registrar_pago_manual(db: Session, cliente_id: int, pago_in: PagoManualCreate, current_user: Any, tenant_id: int):
+    cliente = db.query(Cliente).filter(
+        Cliente.id == cliente_id,
+        Cliente.tenant_id == tenant_id
+    ).first()
     if not cliente:
         raise ValueError("Cliente no encontrado")
-
+ 
     cliente.saldo_dinero -= pago_in.monto
 
     mov_data = {
         "tenant_id": tenant_id,
         "cliente_id": cliente_id,
+        "repartidor_id": current_user.id,
         "recorrido_id": None, 
         "detalles": {}, 
         "monto_total": 0.0, 

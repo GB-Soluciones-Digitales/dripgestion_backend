@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.crud import crud_user
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 from fastapi import HTTPException, status
 
 def crear_nuevo_usuario(db: Session, user_in: UserCreate, tenant_id: int):

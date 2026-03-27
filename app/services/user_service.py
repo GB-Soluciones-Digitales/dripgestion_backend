@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.crud import crud_user
+from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 from fastapi import HTTPException, status
 
@@ -12,6 +13,12 @@ def crear_nuevo_usuario(db: Session, user_in: UserCreate, tenant_id: int):
 
 def listar_usuarios(db: Session, tenant_id: int):
     return crud_user.get_users_by_tenant(db, tenant_id)
+
+def obtener_por_id(db: Session, user_id: int, tenant_id: int):
+    return db.query(User).filter(
+        User.id == user_id, 
+        User.tenant_id == tenant_id
+    ).first()
 
 def actualizar_usuario(db: Session, user_id: int, user_in: UserUpdate, tenant_id: int):
     user_existente = crud_user.get_user_by_username(db, user_in.username, tenant_id)

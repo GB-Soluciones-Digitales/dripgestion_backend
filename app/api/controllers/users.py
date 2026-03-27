@@ -12,6 +12,13 @@ router = APIRouter()
 def get_usuarios_equipo(db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
     return user_service.listar_usuarios(db, current_admin.tenant_id)
 
+@router.get("/{user_id}", response_model=schemas.user.UserResponse)
+def obtener_usuario_detalle(user_id: int, db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
+    user = user_service.obtener_por_id(db, user_id, current_admin.tenant_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return user
+
 @router.post("", response_model=schemas.user.UserResponse)
 def crear_usuario_equipo(user_in: schemas.user.UserCreate, db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
     try:

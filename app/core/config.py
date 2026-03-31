@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: Optional[str] = None
     CLOUDINARY_API_SECRET: Optional[str] = None
 
+    REDIS_URL: str
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

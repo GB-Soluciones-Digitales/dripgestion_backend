@@ -10,12 +10,16 @@ from app.models.producto import Producto
 from app.models.logistica import Recorrido
 
 def registrar_entrega(db: Session, mov_in: MovimientoCreate, current_user: Any, tenant_id: int):
+
     cliente = db.query(Cliente).filter(
         Cliente.id == mov_in.cliente_id,
         Cliente.tenant_id == tenant_id
     ).first()
+
     if not cliente:
         raise ValueError("Cliente no encontrado")
+
+    repartidor_id = current_user.id
 
     if mov_in.recorrido_id:
         recorrido = db.query(Recorrido).filter(
@@ -62,7 +66,13 @@ def registrar_entrega(db: Session, mov_in: MovimientoCreate, current_user: Any, 
         "observacion": mov_in.observacion
     }
  
-    return crud_logistica.create_movimiento(db, mov_data)
+    try:
+        movimiento_creado = crud_logistica.create_movimiento(db, mov_data)
+        return movimiento_creado
+    
+    except Exception as e:
+        db.rollback() 
+        raise ValueError(f"Error al registrar la entrega en la base de datos: {str(e)}")
 
 def registrar_pago_manual(db: Session, cliente_id: int, pago_in: PagoManualCreate, current_user: Any, tenant_id: int):
     cliente = db.query(Cliente).filter(

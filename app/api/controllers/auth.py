@@ -8,7 +8,7 @@ from app.api import deps
 from app.db.session import get_db
 from app.schemas.user import UserResponse
 from app.services import auth_service
-from app.main import limiter
+from app.core.limiter import limiter
 
 router = APIRouter()
 

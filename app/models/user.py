@@ -33,6 +33,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     full_name = Column(String, nullable=True)
 
+    token_version = Column(Integer, default=1, nullable=False)
+
     @validates('role')
     def validate_role(self, key, value):
         if isinstance(value, str):

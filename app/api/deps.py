@@ -21,14 +21,11 @@ def get_db_session() -> Generator:
     finally:
         db.close()
 
-def get_current_user(
-    db: Session = Depends(get_db),
-    token: str = Depends(reusable_oauth2)
-) -> models.user.User:
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> models.user.User:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        token_version: int = payload.get("version") 
         token_data = schemas.token.TokenPayload(**payload)
     except (JWTError, ValidationError):
         raise HTTPException(
@@ -37,10 +34,18 @@ def get_current_user(
         )
         
     user = db.query(models.user.User).filter(models.user.User.id == token_data.sub).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Usuario inactivo")
+        
+    if token_version is None or user.token_version != token_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Sesión invalidada. Por favor, vuelva a iniciar sesión."
+        )
+        
     return user
 
 def get_current_admin(

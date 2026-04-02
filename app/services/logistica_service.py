@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import date
@@ -110,12 +110,13 @@ def registrar_pago_manual(db: Session, cliente_id: int, pago_in: PagoManualCreat
         db.rollback()
         raise ValueError(f"Error al registrar el pago manual: {str(e)}")
 
-def obtener_historial_dia(db: Session, fecha: date, tenant_id: int):
-    movimientos = crud_logistica.get_movimientos_dia(db, fecha, tenant_id)
+def obtener_historial_dia(db: Session, fecha: date, tenant_id: int, chofer_id: Optional[int] = None, recorrido_id: Optional[int] = None):
+    movimientos = crud_logistica.get_movimientos_dia(db, fecha, tenant_id, chofer_id, recorrido_id)
     productos = db.query(Producto).filter(Producto.tenant_id == tenant_id).all()
     mapa_productos = {str(p.id): p.nombre for p in productos}
-    
+
     resultados = []
+    
     for mov, nombre_cliente in movimientos:
         detalles_texto = []
         if mov.detalles:
@@ -137,6 +138,7 @@ def obtener_historial_dia(db: Session, fecha: date, tenant_id: int):
             "resumen_productos": texto_productos,
             "observacion": mov.observacion
         })
+
     return resultados
 
 def obtener_resumen_mes(db: Session, user: Any):

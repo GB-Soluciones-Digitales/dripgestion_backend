@@ -58,13 +58,22 @@ def create_movimiento(db: Session, mov_data: dict):
     db.flush()
     return nuevo_mov
 
-def get_movimientos_dia(db: Session, fecha: date, tenant_id: int):
-    return db.query(logistica.Movimiento, cliente.Cliente.nombre_negocio)\
+def get_movimientos_dia(db: Session, fecha: date, tenant_id: int, chofer_id: Optional[int] = None, recorrido_id: Optional[int] = None):
+    query = db.query(logistica.Movimiento, cliente.Cliente.nombre_negocio)\
         .join(cliente.Cliente)\
         .filter(
             logistica.Movimiento.tenant_id == tenant_id,
             func.date(logistica.Movimiento.fecha) == fecha
-        ).order_by(logistica.Movimiento.fecha.desc()).all()
+        )
+    
+    if chofer_id:
+        query = query.filter(logistica.Movimiento.repartidor_id == chofer_id)
+
+    if recorrido_id:
+        query = query.filter(logistica.Movimiento.recorrido_id == recorrido_id)
+
+    
+    return query.order_by(logistica.Movimiento.fecha.desc()).all()
 
 def get_movimientos_mes(db: Session, mes: int, anio: int, tenant_id: int):
     return db.query(logistica.Movimiento).filter(

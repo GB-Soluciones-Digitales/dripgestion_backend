@@ -91,43 +91,17 @@ def registrar_pago_manual(cliente_id: int, pago_in: PagoManualCreate, db: Sessio
 
 @router.get("/historial")
 @limiter.limit("20/minute")
-def get_historial_por_fecha(request: Request, fecha: Optional[date] = None, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
+def get_historial_por_fecha(request: Request, fecha: Optional[date] = None, chofer_id: Optional[int] = None, recorrido_id: Optional[int] = None, db: Session = Depends(get_db), current_user: models.user.User = Depends(deps.get_current_user)):
     if current_user.role == models.user.UserRole.CLIENTE:
         raise HTTPException(status_code=403, detail="Acceso no permitido")
- 
+
     if not fecha:
         fecha = date.today()
  
     if current_user.role == models.user.UserRole.REPARTIDOR:
-        movimientos_raw = crud_logistica.get_movimientos_by_repartidor(
-            db, current_user.id, current_user.tenant_id, fecha
-        )
-        from app.models.producto import Producto
-        productos = db.query(Producto).filter(Producto.tenant_id == current_user.tenant_id).all()
-        mapa_productos = {str(p.id): p.nombre for p in productos}
-        resultados = []
-        for mov, nombre_cliente in movimientos_raw:
-            detalles_texto = []
-            if mov.detalles:
-                for prod_id, cant in mov.detalles.items():
-                    entregados = cant.get("entregado", 0)
-                    if entregados > 0:
-                        nombre_prod = mapa_productos.get(str(prod_id), "Producto")
-                        detalles_texto.append(f"{entregados} {nombre_prod}")
-            texto_productos = " + ".join(detalles_texto) if detalles_texto else "Solo cobro / Sin entrega"
-            resultados.append({
-                "id": mov.id,
-                "hora": mov.fecha.strftime("%H:%M"),
-                "cliente": nombre_cliente,
-                "metodo_pago": mov.metodo_pago,
-                "monto_total": mov.monto_total,
-                "monto_cobrado": mov.monto_cobrado,
-                "resumen_productos": texto_productos,
-                "observacion": mov.observacion
-            })
-        return resultados
- 
-    return logistica_service.obtener_historial_dia(db, fecha, current_user.tenant_id)
+        chofer_id = current_user.id
+
+    return logistica_service.obtener_historial_dia(db, fecha, current_user.tenant_id, chofer_id, recorrido_id)
  
 @router.get("/historial/mes-actual")
 @limiter.limit("15/minute")

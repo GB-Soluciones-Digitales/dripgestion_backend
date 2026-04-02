@@ -48,12 +48,7 @@ def logout_employee_devices(user_id: int, db: Session = Depends(get_db), current
     return {"message": f"Se han cerrado todas las sesiones del usuario '{user.username}'."}
     
 @router.put("/{user_id}", response_model=schemas.user.UserResponse)
-def editar_usuario_equipo(
-    user_id: int, 
-    user_in: schemas.user.UserUpdate, 
-    db: Session = Depends(get_db), 
-    current_admin: models.user.User = Depends(deps.get_current_admin)
-):
+def editar_usuario_equipo(user_id: int, user_in: schemas.user.UserUpdate, db: Session = Depends(get_db), current_admin: models.user.User = Depends(deps.get_current_admin)):
     try:
         return user_service.actualizar_usuario(db, user_id, user_in, current_admin.tenant_id)
     except ValueError as e:
